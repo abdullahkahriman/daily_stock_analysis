@@ -6,7 +6,7 @@ from __future__ import annotations
 import re
 from typing import Any, Dict, Optional
 
-SUPPORTED_REPORT_LANGUAGES = ("zh", "en")
+SUPPORTED_REPORT_LANGUAGES = ("zh", "en", "tr")
 
 _REPORT_LANGUAGE_ALIASES = {
     "zh-cn": "zh",
@@ -22,14 +22,20 @@ _REPORT_LANGUAGE_ALIASES = {
     "en_us": "en",
     "en-gb": "en",
     "en_gb": "en",
+    "turkish": "tr",
+    "türkçe": "tr",
+    "tr-tr": "tr",
+    "tr_tr": "tr",
 }
 
 _OPERATION_ADVICE_CANONICAL_MAP = {
     "强烈买入": "strong_buy",
     "strong buy": "strong_buy",
     "strong_buy": "strong_buy",
+    "güçlü al": "strong_buy",
     "买入": "buy",
     "buy": "buy",
+    "al": "buy",
     "加仓": "buy",
     "accumulate": "buy",
     "add position": "buy",
@@ -37,28 +43,33 @@ _OPERATION_ADVICE_CANONICAL_MAP = {
     "洗盘观察": "hold",
     "观察": "hold",
     "hold": "hold",
+    "tut": "hold",
     "观望": "watch",
     "watch": "watch",
+    "bekle": "watch",
     "wait": "watch",
     "wait and see": "watch",
     "减仓": "reduce",
     "reduce": "reduce",
+    "azalt": "reduce",
     "trim": "reduce",
     "卖出": "sell",
     "sell": "sell",
+    "sat": "sell",
     "强烈卖出": "strong_sell",
     "strong sell": "strong_sell",
     "strong_sell": "strong_sell",
+    "güçlü sat": "strong_sell",
 }
 
 _OPERATION_ADVICE_TRANSLATIONS = {
-    "strong_buy": {"zh": "强烈买入", "en": "Strong Buy"},
-    "buy": {"zh": "买入", "en": "Buy"},
-    "hold": {"zh": "持有", "en": "Hold"},
-    "watch": {"zh": "观望", "en": "Watch"},
-    "reduce": {"zh": "减仓", "en": "Reduce"},
-    "sell": {"zh": "卖出", "en": "Sell"},
-    "strong_sell": {"zh": "强烈卖出", "en": "Strong Sell"},
+    "strong_buy": {"zh": "强烈买入", "en": "Strong Buy", "tr": "Güçlü Al"},
+    "buy": {"zh": "买入", "en": "Buy", "tr": "Al"},
+    "hold": {"zh": "持有", "en": "Hold", "tr": "Tut"},
+    "watch": {"zh": "观望", "en": "Watch", "tr": "Bekle"},
+    "reduce": {"zh": "减仓", "en": "Reduce", "tr": "Azalt"},
+    "sell": {"zh": "卖出", "en": "Sell", "tr": "Sat"},
+    "strong_sell": {"zh": "强烈卖出", "en": "Strong Sell", "tr": "Güçlü Sat"},
 }
 
 _TREND_PREDICTION_CANONICAL_MAP = {
@@ -66,6 +77,7 @@ _TREND_PREDICTION_CANONICAL_MAP = {
     "强烈看多": "strong_bullish",
     "strong bullish": "strong_bullish",
     "very bullish": "strong_bullish",
+    "güçlü yükseliş": "strong_bullish",
     "强势多头": "strong_bullish",
     "多头排列": "bullish",
     "空头排列": "bearish",
@@ -74,93 +86,110 @@ _TREND_PREDICTION_CANONICAL_MAP = {
     "看多": "bullish",
     "盘整": "sideways",
     "bullish": "bullish",
+    "yükseliş": "bullish",
     "uptrend": "bullish",
     "震荡": "sideways",
     "neutral": "sideways",
     "sideways": "sideways",
+    "yatay": "sideways",
     "range-bound": "sideways",
     "看空": "bearish",
     "bearish": "bearish",
+    "düşüş": "bearish",
     "downtrend": "bearish",
     "强烈看空": "strong_bearish",
     "strong bearish": "strong_bearish",
     "very bearish": "strong_bearish",
+    "güçlü düşüş": "strong_bearish",
 }
 
 _TREND_PREDICTION_TRANSLATIONS = {
-    "strong_bullish": {"zh": "强烈看多", "en": "Strong Bullish"},
-    "bullish": {"zh": "看多", "en": "Bullish"},
-    "sideways": {"zh": "震荡", "en": "Sideways"},
-    "bearish": {"zh": "看空", "en": "Bearish"},
-    "strong_bearish": {"zh": "强烈看空", "en": "Strong Bearish"},
+    "strong_bullish": {"zh": "强烈看多", "en": "Strong Bullish", "tr": "Güçlü Yükseliş"},
+    "bullish": {"zh": "看多", "en": "Bullish", "tr": "Yükseliş"},
+    "sideways": {"zh": "震荡", "en": "Sideways", "tr": "Yatay"},
+    "bearish": {"zh": "看空", "en": "Bearish", "tr": "Düşüş"},
+    "strong_bearish": {"zh": "强烈看空", "en": "Strong Bearish", "tr": "Güçlü Düşüş"},
 }
 
 _CONFIDENCE_LEVEL_CANONICAL_MAP = {
     "高": "high",
     "high": "high",
+    "yüksek": "high",
     "中": "medium",
     "medium": "medium",
     "med": "medium",
+    "orta": "medium",
     "低": "low",
     "low": "low",
+    "düşük": "low",
 }
 
 _CONFIDENCE_LEVEL_TRANSLATIONS = {
-    "high": {"zh": "高", "en": "High"},
-    "medium": {"zh": "中", "en": "Medium"},
-    "low": {"zh": "低", "en": "Low"},
+    "high": {"zh": "高", "en": "High", "tr": "Yüksek"},
+    "medium": {"zh": "中", "en": "Medium", "tr": "Orta"},
+    "low": {"zh": "低", "en": "Low", "tr": "Düşük"},
 }
 
 _CHIP_HEALTH_CANONICAL_MAP = {
     "健康": "healthy",
     "healthy": "healthy",
+    "sağlıklı": "healthy",
     "一般": "average",
     "average": "average",
+    "normal": "average",
     "警惕": "caution",
     "caution": "caution",
+    "dikkatli": "caution",
 }
 
 _CHIP_HEALTH_TRANSLATIONS = {
-    "healthy": {"zh": "健康", "en": "Healthy"},
-    "average": {"zh": "一般", "en": "Average"},
-    "caution": {"zh": "警惕", "en": "Caution"},
+    "healthy": {"zh": "健康", "en": "Healthy", "tr": "Sağlıklı"},
+    "average": {"zh": "一般", "en": "Average", "tr": "Normal"},
+    "caution": {"zh": "警惕", "en": "Caution", "tr": "Dikkatli"},
 }
 
 _BIAS_STATUS_CANONICAL_MAP = {
     "安全": "safe",
     "safe": "safe",
+    "güvenli": "safe",
     "警戒": "caution",
     "警惕": "caution",
     "caution": "caution",
+    "dikkat": "caution",
     "危险": "danger",
     "risk": "danger",
     "danger": "danger",
+    "tehlikeli": "danger",
 }
 
 _BIAS_STATUS_TRANSLATIONS = {
-    "safe": {"zh": "安全", "en": "Safe"},
-    "caution": {"zh": "警戒", "en": "Caution"},
-    "danger": {"zh": "危险", "en": "Danger"},
+    "safe": {"zh": "安全", "en": "Safe", "tr": "Güvenli"},
+    "caution": {"zh": "警戒", "en": "Caution", "tr": "Dikkat"},
+    "danger": {"zh": "危险", "en": "Danger", "tr": "Tehlikeli"},
 }
 
 _PLACEHOLDER_BY_LANGUAGE = {
     "zh": "待补充",
     "en": "TBD",
+    "tr": "Beklemede",
 }
 
 _UNKNOWN_BY_LANGUAGE = {
     "zh": "未知",
     "en": "Unknown",
+    "tr": "Bilinmiyor",
 }
 
 _NO_DATA_BY_LANGUAGE = {
     "zh": "数据缺失",
     "en": "Data unavailable",
+    "tr": "Veri yok",
 }
 
 _CHIP_UNAVAILABLE_BY_LANGUAGE = {
     "zh": "筹码分布未启用或数据源暂不可用，未纳入筹码判断。",
     "en": "Chip distribution is disabled or temporarily unavailable; chip signals were not used.",
+    "tr": "Çip dağılımı devre dışı veya geçici olarak kullanılamıyor; çip sinyalleri kullanılmadı.",
 }
 
 _CHIP_PLACEHOLDER_EXACT = {
@@ -197,6 +226,7 @@ _CHIP_UNAVAILABLE_REASON_KEYS = (
 _GENERIC_STOCK_NAME_BY_LANGUAGE = {
     "zh": "待确认股票",
     "en": "Unnamed Stock",
+    "tr": "İsimsiz Hisse",
 }
 
 _REPORT_LABELS: Dict[str, Dict[str, str]] = {
@@ -415,6 +445,114 @@ _REPORT_LABELS: Dict[str, Dict[str, str]] = {
         "board_change_pct_label": "Change %",
         "leading_board_label": "Leading",
         "lagging_board_label": "Lagging",
+    },
+    "tr": {
+        "dashboard_title": "Karar Gösterge Paneli",
+        "brief_title": "Karar Özeti",
+        "analyzed_prefix": "Analiz edildi",
+        "stock_unit": "hisse",
+        "stock_unit_compact": "hisse",
+        "buy_label": "Al",
+        "watch_label": "Bekle",
+        "sell_label": "Sat",
+        "summary_heading": "Özet",
+        "info_heading": "Önemli Güncellemeler",
+        "sentiment_summary_label": "Piyasa Duyarlılığı",
+        "earnings_outlook_label": "Kazanç Görünümü",
+        "risk_alerts_label": "Risk Uyarıları",
+        "positive_catalysts_label": "Olumlu Katalizörler",
+        "latest_news_label": "Son Haberler",
+        "core_conclusion_heading": "Temel Sonuç",
+        "one_sentence_label": "Tek Satır Karar",
+        "time_sensitivity_label": "Zaman Duyarlılığı",
+        "default_time_sensitivity": "Bu hafta",
+        "position_status_label": "Pozisyon",
+        "action_advice_label": "İşlem",
+        "no_position_label": "Pozisyon Yok",
+        "has_position_label": "Pozisyon Var",
+        "continue_holding": "Tutmaya devam et",
+        "market_snapshot_heading": "Piyasa Anlık Görünümü",
+        "close_label": "Kapanış",
+        "prev_close_label": "Önceki Kapanış",
+        "open_label": "Açılış",
+        "high_label": "En Yüksek",
+        "low_label": "En Düşük",
+        "change_pct_label": "Değişim %",
+        "change_amount_label": "Değişim",
+        "amplitude_label": "Genlik",
+        "volume_label": "Hacim",
+        "amount_label": "Ciro",
+        "current_price_label": "Fiyat",
+        "volume_ratio_label": "Hacim Oranı",
+        "turnover_rate_label": "Devir Hızı",
+        "source_label": "Kaynak",
+        "data_perspective_heading": "Veri Görünümü",
+        "ma_alignment_label": "HO Dizilimi",
+        "bullish_alignment_label": "Yükseliş Dizilimi",
+        "yes_label": "Evet",
+        "no_label": "Hayır",
+        "trend_strength_label": "Trend Gücü",
+        "price_metrics_label": "Fiyat Göstergeleri",
+        "ma5_label": "HO5",
+        "ma10_label": "HO10",
+        "ma20_label": "HO20",
+        "bias_ma5_label": "Sapma (HO5)",
+        "support_level_label": "Destek",
+        "resistance_level_label": "Direnç",
+        "chip_label": "Çip Yapısı",
+        "phase_decision_heading": "Aşama Karar Koruyucusu",
+        "action_window_label": "Eylem Penceresi",
+        "immediate_action_label": "Anlık İşlem",
+        "watch_conditions_label": "İzleme Koşulları",
+        "next_check_time_label": "Sonraki Kontrol",
+        "confidence_reason_label": "Güven Gerekçesi",
+        "data_limitations_label": "Veri Kısıtlamaları",
+        "battle_plan_heading": "İşlem Planı",
+        "ideal_buy_label": "İdeal Giriş",
+        "secondary_buy_label": "İkincil Giriş",
+        "stop_loss_label": "Zarar Kes",
+        "take_profit_label": "Hedef",
+        "suggested_position_label": "Pozisyon Büyüklüğü",
+        "entry_plan_label": "Giriş Planı",
+        "risk_control_label": "Risk Kontrolü",
+        "checklist_heading": "Kontrol Listesi",
+        "failed_checks_heading": "Başarısız Kontroller",
+        "history_compare_heading": "Tarihsel Sinyal Karşılaştırması",
+        "time_label": "Zaman",
+        "score_label": "Puan",
+        "advice_label": "Öneri",
+        "trend_label": "Trend",
+        "generated_at_label": "Oluşturulma Zamanı",
+        "report_time_label": "Oluşturuldu",
+        "no_results": "Analiz sonucu yok",
+        "report_title": "Hisse Senedi Analiz Raporu",
+        "avg_score_label": "Ort. Puan",
+        "action_points_heading": "İşlem Seviyeleri",
+        "position_advice_heading": "Pozisyon Tavsiyesi",
+        "analysis_model_label": "Model",
+        "not_investment_advice": "Yapay zeka tarafından üretilmiştir; yalnızca referans amaçlıdır. Yatırım tavsiyesi değildir.",
+        "details_report_hint": "Ayrıntılı rapor için bkz.:",
+        "financial_summary_heading": "Finansal Özet",
+        "report_date_label": "Rapor Tarihi",
+        "revenue_label": "Gelir",
+        "net_profit_label": "Net Kâr (Ana Şirket)",
+        "operating_cash_flow_label": "Faaliyet Nakit Akışı",
+        "roe_label": "ÖSK",
+        "revenue_yoy_label": "Gelir YoY",
+        "net_profit_yoy_label": "Net Kâr YoY",
+        "gross_margin_label": "Brüt Marj",
+        "shareholder_return_heading": "Hissedar Getirisi",
+        "ttm_cash_dividend_label": "TTM Nakit Temettü / Hisse (Vergi Öncesi)",
+        "ttm_event_count_label": "TTM Temettü Olayları",
+        "ttm_dividend_yield_label": "TTM Temettü Verimi",
+        "latest_ex_dividend_label": "Son Temettü Tarihi",
+        "related_boards_heading": "İlgili Sektörler",
+        "board_name_label": "Sektör",
+        "board_type_label": "Tür",
+        "board_status_label": "Durum",
+        "board_change_pct_label": "Değişim %",
+        "leading_board_label": "Lider",
+        "lagging_board_label": "Geri Kalan",
     },
 }
 
@@ -816,6 +954,17 @@ def get_sentiment_label(score: int, language: Optional[str]) -> str:
         if score >= 20:
             return "Bearish"
         return "Very Bearish"
+
+    if normalized == "tr":
+        if score >= 80:
+            return "Çok İyimser"
+        if score >= 60:
+            return "İyimser"
+        if score >= 40:
+            return "Nötr"
+        if score >= 20:
+            return "Kötümser"
+        return "Çok Kötümser"
 
     if score >= 80:
         return "极度乐观"
