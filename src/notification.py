@@ -1050,12 +1050,12 @@ class NotificationService(
         config = get_config()
         report_language = self._get_report_language(results)
         labels = get_report_labels(report_language)
-        reason_label = "Rationale" if report_language == "en" else "操作理由"
-        risk_warning_label = "Risk Warning" if report_language == "en" else "风险提示"
-        technical_heading = "Technicals" if report_language == "en" else "技术面"
-        ma_label = "Moving Averages" if report_language == "en" else "均线"
-        volume_analysis_label = "Volume" if report_language == "en" else "量能"
-        news_heading = "News Flow" if report_language == "en" else "消息面"
+        reason_label = "Rationale" if report_language == "en" else ("İşlem Gerekçesi" if report_language == "tr" else "操作理由")
+        risk_warning_label = "Risk Warning" if report_language == "en" else ("Risk Uyarısı" if report_language == "tr" else "风险提示")
+        technical_heading = "Technicals" if report_language == "en" else ("Teknik Göstergeler" if report_language == "tr" else "技术面")
+        ma_label = "Moving Averages" if report_language == "en" else ("Hareketli Ortalamalar" if report_language == "tr" else "均线")
+        volume_analysis_label = "Volume" if report_language == "en" else ("Hacim" if report_language == "tr" else "量能")
+        news_heading = "News Flow" if report_language == "en" else ("Haber Akışı" if report_language == "tr" else "消息面")
         if getattr(config, 'report_renderer_enabled', False) and results:
             from src.services.report_renderer import render
             out = render(
